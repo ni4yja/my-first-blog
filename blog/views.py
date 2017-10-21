@@ -3,6 +3,7 @@ from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from .models import Post
 from .forms import PostForm
+from django.http import HttpResponseForbidden
 
 def post_list(request):
     posts = Post.objects.filter(published_date__lte=timezone.now()).\
@@ -14,6 +15,8 @@ def post_detail(request, pk):
     return render(request, 'blog/post_detail.html', {'post': post})
 
 def post_new(request):
+    if not request.user.is_authenticated():
+        return HttpResponseForbidden()
     if request.method == "POST":
         form = PostForm(request.POST)
         if form.is_valid():
@@ -27,6 +30,8 @@ def post_new(request):
     return render(request, 'blog/post_edit.html', {'form': form})
 
 def post_edit(request, pk):
+    if not request.user.is_authenticated():
+        return HttpResponseForbidden()
     post = get_object_or_404(Post, pk=pk)
     if request.method == "POST":
         form = PostForm(request.POST, instance=post)
